@@ -20,7 +20,8 @@ class MCPClient:
 
 # Example usage
 if __name__ == "__main__":
-    client = MCPClient("http://172.23.48.126:6277")
+    #client = MCPClient("http://172.23.48.126:6277")
+    client = MCPClient("http://127.0.0.1:6277")
 
     result = client.call("add", {"a": 5, "b": 7})
     print(result)
