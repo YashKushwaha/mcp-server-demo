@@ -2,6 +2,7 @@ import sqlite3
 import aiosqlite
 
 from mcp.server.mcpserver import MCPServer
+import json
 
 # Create an MCP server
 mcp = MCPServer("sqlite-Demo")
@@ -13,7 +14,12 @@ async def read_query(query: str):
     async with aiosqlite.connect(DB_PATH) as db:
         async with db.execute(query) as cursor:
             rows = await cursor.fetchall()
-            return rows
+            # convert to readable structured string
+            output =  "\n".join(
+                [f"{r[0]} | {r[1]} | {r[2]}" for r in rows]
+            )
+            return output
+            #return json.dumps([dict(r) for r in rows])
 
 @mcp.tool()
 async def write_query(query: str):

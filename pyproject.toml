@@ -7,4 +7,5 @@ requires-python = ">=3.14"
 dependencies = [
     "aiosqlite>=0.22.1",
     "mcp[cli]==2.0.0a2",
+    "rich>=15.0.0",
 ]
