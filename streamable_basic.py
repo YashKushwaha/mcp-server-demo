@@ -13,12 +13,14 @@ from mcp.types import (
     CallToolResult,
     ReadResourceResult,
     GetPromptResult,
+    ListResourceTemplatesResult
 )
 
 
-async def main():
+
+async def test_fastmcp_quickstart(url):
     async with streamable_http_client(
-        "http://localhost:8000/mcp"
+        url
     ) as (read_stream, write_stream):
 
         async with ClientSession(read_stream, write_stream) as session:
@@ -67,4 +69,36 @@ async def main():
             print(prompt)
 
 
-asyncio.run(main())
+async def test_mcpserver(url):
+    async with streamable_http_client(
+        url
+    ) as (read_stream, write_stream):
+
+        async with ClientSession(read_stream, write_stream) as session:
+            await session.initialize()
+
+            print("\n=== TOOLS ===")
+            tools: ListToolsResult = await session.list_tools()
+            for t in tools.tools:
+                print("-", t.name)
+
+            print("\n=== RESOURCES ===")
+            resources: ListResourcesResult = await session.list_resources()
+            for r in resources.resources:
+                print("-", r.uri)
+
+            templates: ListResourceTemplatesResult = await session.list_resource_templates()
+            print(templates.resource_templates)
+
+            print("\n=== PROMPTS ===")
+            prompts: ListPromptsResult = await session.list_prompts()
+            for p in prompts.prompts:
+                print("-", p.name)
+
+if __name__ == "__main__":
+
+    #url = "http://localhost:8000/mcp"
+
+    url = "http://localhost:8001/mcp"
+
+    asyncio.run(test_mcpserver(url)) 
