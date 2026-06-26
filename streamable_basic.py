@@ -6,7 +6,7 @@ from rich import print
 from mcp import ClientSession, Resource, Tool
 from mcp.client.streamable_http import streamable_http_client
 from mcp.client.stdio import stdio_client, StdioServerParameters
-
+import json
 from mcp.types import (
     BlobResourceContents,
     BlobResourceContents,
@@ -20,7 +20,7 @@ from mcp.types import (
     TextResourceContents,
     TextResourceContents
 )
-
+import sys
 
 import os
 async def test_fastmcp_quickstart(url):
@@ -121,15 +121,18 @@ async def test_github_mcp_server():
         async with ClientSession(read_stream, write_stream) as session:
             await session.initialize()
 
-            print("\n=== TOOLS ===")
+            print("## TOOLS")
             tools: ListToolsResult = await session.list_tools()
             tools_list : list[Tool] = tools.tools
             for t in tools_list:
-                print("-", t.name)
-                #print(t.description)
-                #print(t.input_schema)
-                #print('\n')
-
+                print("**Tool Name** :", t.name, end = '\n\n')
+                print("**Tool Description** :", t.description, end = '\n\n')
+                print('**INPUT SCHEMA**', end = '\n\n')
+                print(f'```json\n{json.dumps(t.input_schema, indent=2)}\n```', end = '\n\n')
+                print('\n---\n')
+                print('**OUTPUT SCHEMA**', end = '\n\n')
+                print(f'```json\n{json.dumps(t.output_schema, indent=2)}\n```', end = '\n\n')
+                print('\n---\n')
             #return
             print("\n=== RESOURCES ===")
             resources: ListResourcesResult = await session.list_resources()
@@ -142,7 +145,7 @@ async def test_github_mcp_server():
                 to_write = '\n'.join([str(c.text) for c in contents])
                 with open(f"resource_{r.uri.replace('/', '_')}.html", "w") as f:
                     f.write(to_write)
-            return 
+
             print("\n=== RESOURCE TEMPLATES ===")
             templates: ListResourceTemplatesResult = await session.list_resource_templates()
             for t in templates.resource_templates:
@@ -158,6 +161,8 @@ if __name__ == "__main__":
     url = "http://localhost:8000/mcp"
 
     #url = "http://localhost:8001/mcp"
-
-    asyncio.run(test_github_mcp_server()) 
+    output_file = 'github_mcp_server_schema.md'
+    with open(output_file, 'w') as f:
+        sys.stdout = f
+        asyncio.run(test_github_mcp_server()) 
     #asyncio.run(test_mcpserver(url)) 
