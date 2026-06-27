@@ -11,11 +11,13 @@ run_telemetry_setup()
 from openinference.instrumentation.langchain import LangChainInstrumentor
 LangChainInstrumentor().instrument()
 
+from opentelemetry import trace
+
 from contextlib import asynccontextmanager
 from langchain.agents import create_agent
 from rich import print
 import asyncio
-
+tracer = trace.get_tracer(__name__)
 from mcp.server.mcpserver import MCPServer
 
 async def load_mcp_tools_manually(session: ClientSession):
@@ -73,15 +75,20 @@ from langchain_core.messages.tool import (
         ToolCall,
         ToolMessage)
 
+@tracer.start_as_current_span("process_start")
 async def main():
+    span = trace.get_current_span()
+    
     async with get_mcp_session() as session:
         tools = await load_mcp_tools_manually(session)
         print("Available tools:", [t["name"] for t in tools])
+        span.add_event('mcp_tools_loaded', attributes= {'mcp.tool.list' : [t["name"] for t in tools]})
         model_wo_tools = ChatOpenAI(model = "gpt-5-nano")
         model = model_wo_tools.bind_tools(tools)
         system_msg = SystemMessage(system_prompt)
         #user_query = "I am planning to go to the dentist this weekend, can you save a note for me ?"
-        user_query = 'What is the current time ?'
+        #user_query = 'What is the current time ?'
+        user_query = "I have an appointment with the Dentist tomorrow afternoon. Can you add it to the notebook ? Thanks."
         human_msg = HumanMessage(user_query)
         messages = [system_msg, human_msg]
 
