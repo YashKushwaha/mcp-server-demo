@@ -23,6 +23,9 @@ def call_tool(name, args):
 
     raise ValueError(f"Unknown tool: {name}")
 
+async def get_mcp_client():
+    pass
+
 
 # ---- fake LLM call (replace with real API call) ----
 def llm(messages, tools):
